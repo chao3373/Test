@@ -12,14 +12,23 @@ import java.util.regex.Pattern;
 
 public class MyPC {
 	
-	//链接：https://github.com/FIRHQ/
+	//链接：https://github.com/FIRHQ/?page=1
 	public static void main(String[] args) throws Exception {
 		
-		String[] ur = {"https://github.com/FIRHQ/", "https://github.com/FIRHQ?page=2"};
+		String url = "https://github.com/FIRHQ/";
 		
-		ArrayList<String> html = MyPC.getHtml(ur);
+		String[] urls = new String[MyPC.getPage(url)];
+		
+		for (int i = 0; i < urls.length; i++) {
+			urls[i] = url + "?page=" + (i+1);
+		}
+		
+		ArrayList<String> html = MyPC.getHtml(urls);
 		
 		ArrayList<ProName> pros = MyPC.getPros(html);
+		
+		
+		
 		
 		for(ProName p : pros) {
 			System.out.println(p);
@@ -113,5 +122,44 @@ public class MyPC {
 		
 		return pros;
 	}
+	
 
+	public static int getPage(String ur) throws Exception {
+		
+		URL url = new URL(ur);
+		
+		HttpURLConnection httpURL = (HttpURLConnection)url.openConnection();
+		
+		InputStream is = httpURL.getInputStream();
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+		
+		StringBuilder sb = new StringBuilder();
+		
+		String line;
+		
+		while ((line = br.readLine()) != null) {
+			
+			sb.append(line);
+
+		}
+		
+		Pattern p = Pattern.compile(".+?pagination.+?>(.+?)</div>");
+		
+		Matcher matcher = p.matcher(sb);
+		
+		String urls = null;
+		
+		while(matcher.find()) {
+			urls = matcher.group(1);
+		}
+		
+		String[] split = urls.split("</a>");
+		
+		is.close();
+		
+		br.close();
+		
+		return split.length;
+	}
 }
